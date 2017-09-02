@@ -45,11 +45,7 @@ def make_om(eq_key, eq):
 
 eqs = {k: make_om(k, v) for k, v in eq_times.items()}
 
-
 rec_fault_zones = {k : v for k, v in fault_zones.items() if len(v) > 1}
-
-
-
 
 
 def get_rec_ints(fz, n_quakes=int(1e4)):
@@ -74,10 +70,13 @@ recs = {k : get_rec_pdf(v) for k, v in rec_fault_zones.items()}
 
 rec_means = {k: cp.stats.pdf_mean(v.x, v.px) for k, v in recs.items()}
 
-
-def disp(fz, n_quakes=int(1e4)):
-    rec_ints = get_rec_ints(fz, n_quakes)
-    return np.var(rec_ints) / np.mean(rec_ints)**2
+cluster_probs = np.prod([300 / rec_means['Bellingham'],
+                         300 / rec_means['Saddle Mountain'],
+                         300 / rec_means['Lake Creek–Boundary Creek'],
+                         300 / rec_means['Saddle Mountain'],
+                         300 / rec_means['Seattle'],
+                         300 / 20000.,
+                         300 / 20000.])
 
 
 def burstiness(fz, n_quakes=int(1e4)):
@@ -88,8 +87,8 @@ def burstiness(fz, n_quakes=int(1e4)):
 
 def memory(fz, n_quakes=int(1e4)):
     rec_ints = get_rec_ints(fz, n_quakes)
-
-    n = len(eqs)
+    
+    n = len(rec_ints)
     m = rec_ints.mean()
     v = rec_ints.var()
 
@@ -98,22 +97,46 @@ def memory(fz, n_quakes=int(1e4)):
 
 
 
-disps = {k: disp(v) for k, v in rec_fault_zones.items()}
-Bs = {k: burstiness(v) for k, v in rec_fault_zones.items()}
-Ms = {k: memory(v) for k, v in rec_fault_zones.items()}
-
-f, axs = plt.subplots(nrows=9, sharex=True, figsize=(8,12))
-
-for i, (eq_name, rec_pdf) in enumerate(recs.items()):
-    axs[i].plot(rec_pdf.x, rec_pdf.px, label=eq_name)
-
-    axs[i].legend()
-plt.show()
 
 
 
-#def get_cluster(fz
+
+#print('doing M+B mcs')
+#print('pB')
+#pug_Bs = [burstiness(rec_fault_zones['puget_lowland'], 1) 
+#          for i in range(int(1e4))]
+#
+#print('sB')
+#sfz_Bs = [burstiness(rec_fault_zones['Seattle'], 1) 
+#          for i in range(int(1e4))]
+#
+#print('pM')
+#pug_Ms = [memory(rec_fault_zones['puget_lowland'], 1) 
+#          for i in range(int(1e4))]
+#
+#print('sM')
+#sfz_Ms = [memory(rec_fault_zones['Seattle'], 1) 
+#          for i in range(int(1e4))]
+#
+#
+#
+#f, axs = plt.subplots(nrows=9, sharex=True, figsize=(8,12))
+#
+#for i, (eq_name, rec_pdf) in enumerate(recs.items()):
+#    axs[i].plot(rec_pdf.x, rec_pdf.px, label=eq_name)
+#
+#    axs[i].legend()
+#
+#
+#plt.figure()
+#plt.scatter(pug_Ms, pug_Bs, c='b', alpha=0.1, lw=0, s=10, label='P')
+#plt.scatter(sfz_Ms, sfz_Bs, c='r', alpha=0.1, lw=0, s=10, label='S')
+#plt.xlim([-1,1])
+#plt.ylim([-1,1])
+#plt.xlabel('Memory')
+#plt.ylabel('Burstiness')
+#plt.legend(loc='upper left')
+#
 
 
-#plt.plot(sfz_rec.x, sfz_rec.px)
 #plt.show()
