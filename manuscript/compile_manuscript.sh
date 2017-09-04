@@ -13,6 +13,7 @@ if [ "$OUT_TYPE" == "doc" ]; then
 elif [ "$OUT_TYPE" == "pdf" ]; then
     pandoc recurrence_manuscript.md \
     -o $OUTFILE_NAME$OUT_TYPE \
+    --number-sections \
     --latex-engine=xelatex \
     --template=default.latex \
     --filter pandoc-citeproc --bibliography=pug_saf_recurrence_manuscript.bib \
@@ -21,7 +22,8 @@ elif [ "$OUT_TYPE" == "pdf" ]; then
 elif [ "$OUT_TYPE" == "tex" ]; then
     pandoc recurrence_manuscript.md \
     -o $OUTFILE_NAME$OUT_TYPE \
-    --latex-engine=pdflatex \
+    --number-sections \
+    --template=default.latex
     --filter pandoc-citeproc --bibliography=pug_saf_recurrence_manuscript.bib \
     --csl=/Users/itchy/Zotero/styles/american-geophysical-union.csl
 #--from-markdown \

@@ -186,6 +186,9 @@ ax11.set_title('b', loc='left', weight='bold')
 f1.savefig('../manuscript/figures/pug_recurrence.pdf')
 
 
+last_pug_event = 1950 - list(eq_mean_ages.values())[0]
+last_sfz_event = 1950 - list(sfz_mean_ages.values())[0]
+
 
 f2, (ax20, ax21, ax22) = plt.subplots(3, 1, figsize=(7,6))
 f2.subplots_adjust(top=0.95, bottom=0.1, hspace=0.4)
@@ -207,16 +210,19 @@ ax20.set_ylabel('earthquake hazard λ(t)')
 ax20.set_title('a', loc='left', weight='bold')
 
 
-ax21.plot(pug_tot_rec_pdf.x + (1950 - list(eq_mean_ages.values())[0]), 
+ax21.plot(pug_tot_rec_pdf.x + last_pug_event, 
           cp.recurrence.hazard(pug_tot_rec_pdf.x, pug_tot_rec_pdf),
           )
 
-ax21.axvline(1950 - list(eq_mean_ages.values())[0], 
+ax21.axvline(last_pug_event, 
              color='grey', lw=0.5, label='last earthquake')
 
 ax21.axvline(2017, linestyle='--', color='grey', lw=0.5)
 ax21.axhline(1 / pug_tot_rec_pdf.mean(), 
              color='C0', linestyle='--', lw=0.5, label='mean (Poisson) hazard')
+
+ax21.scatter(2017, cp.recurrence.hazard(2017-last_pug_event, pug_tot_rec_pdf),
+             c='C0')
 
 ax21.set_xlabel('calendar year')
 ax21.set_ylabel('earthquake hazard λ(t)')
@@ -224,15 +230,18 @@ ax21.set_title('b', loc='left', weight='bold')
 
 ax21.legend(loc='upper right')
 
-ax22.plot(sfz_tot_rec_pdf.x + (1950 - list(sfz_mean_ages.values())[0]), 
+ax22.plot(sfz_tot_rec_pdf.x + (1950 - last_sfz_event), 
           cp.recurrence.hazard(sfz_tot_rec_pdf.x, sfz_tot_rec_pdf),
           color='C1')
 
-ax22.axvline(1950 - list(sfz_mean_ages.values())[0], 
+ax22.axvline(1950 - last_sfz_event, 
              color='grey', lw=0.5, label='last earthquake')
 ax22.axvline(2017, linestyle='--', color='grey', lw=0.5)
 ax22.axhline(1 / sfz_tot_rec_pdf.mean(), 
              color='C1', linestyle='--', lw=0.5, label='mean (Poisson) hazard')
+
+ax22.scatter(2017, cp.recurrence.hazard(2017-last_sfz_event, sfz_tot_rec_pdf),
+             c='C1')
 
 ax22.set_xlabel('calendar year')
 ax22.set_ylabel('earthquake hazard λ(t)')

@@ -87,41 +87,70 @@ relative age constraints.
 
 ## Puget Lowlands recurrence
 
-\begin{figure}[tb]
-  \centering
-  \includegraphics{./figures/pug_recurrence.pdf}
-  \caption{Earthquake timing and recurrence intervals in the Puget Lowlands. 
-  \textbf{a}: Time probabilities for each earthquake from the OxCal modeling. 
-  \textbf{b}: Interevent times for each set of consecutive earthquakes (thin 
-  lines) and kernel-density estimate for all interevent times (thick line). 
-  Note that the left \emph{y}-axis scale corresponds to the individual 
-  interevent PDFs, while the right \emph{y}-axis scale corresponds to the total 
-  kernel density estimated recurrence PDF.\label{fig_pug_recurrence}}
-  \end{figure}
+![Earthquake timing and recurrence intervals in the Puget Lowlands. **a**: Time 
+probabilities for each earthquake from the OxCal modeling. **b**: Interevent 
+times for each set of consecutive earthquakes (thin lines) and kernel-density 
+estimate for all interevent times (thick line). Note that the left *y*-axis 
+scale corresponds to the individual interevent PDFs, while the right *y*-axis 
+scale corresponds to the total kernel density estimated recurrence 
+PDF.\label{fig_pug_recurrence}](./figures/pug_recurrence.pdf)
+
 
 Earthquakes in the Puget Lowland are dispersed throughout the past 16 ka, with 
 most of the earthquakes happening in the past 4000 years (Figure 
 \ref{fig_pug_recurrence}a). Given the considerable overlap in the age PDFs 
 (especially for the older events), the earthquakes appear to be grouped in 
 time, with the oldest group at 14-10 ka, another group at 9-6 ka, and a final 
-group from 4 ka to the present. 
+group from 4 ka to the present. Preliminary research suggests this represents 
+earthquake clustering [@styron_earthquake_2016], perhaps due to static stress 
+triggering, though more thorough work is ongoing.
 
+Regardless of the nature of the clustering, the proximity of many of the 
+earthquakes leads to a recurrence distribution that has a high *x*-intercept 
+(i.e., immediately following an earthquake), and climbs steeply to a very 
+peaked mode at 60 years. It then decays monotonically, in a quasi-exponential 
+fashion. The median recurrence interval is 226 years, and the mean is 486 
+years.
+
+The shape of this empirical recurrence distribution is quite different than a 
+normal or log-normal distribution, as is often assumed for individual faults 
+(particularly faults though to have 'characteristic'-type rupture behavior, 
+with regular cycles of strain accumulation and release). This is not 
+surprising, because the recurrence distribution shown represents aggregate 
+behavior from fourteen fault zones, some with multiple strands capable of 
+rupturing independently, such as the Seattle Fault Zone. Therefore, this 
+recurrence distribution is more a reflection of fault interaction than of the 
+specifics of the earthquake cycle on an individual fault.
+
+This recurrence distribution indicates that following an earthquake, the 
+probability of the next earthquake is high, and this probability stays high for 
+several decades before declining. (Quantification of this will be done through 
+survival analysis in Section \ref{survival-analysis}).
 
 ### Seattle Fault Zone
 
-\begin{figure}[tb]
-  \centering
-  \includegraphics{./figures/sfz_recurrence.pdf}
-  \caption{Earthquake timing and recurrence intervals in the Seattle Fault 
-  Zone. See Figure \ref{fig_pug_recurrence} for explanation. 
-  \label{fig_sfz_recurrence}}
-\end{figure}
+
+![Earthquake timing and recurrence intervals in the Seattle Fault Zone. See 
+Figure \ref{fig_pug_recurrence} for 
+explanation.\label{fig_sfz_recurrence}](./figures/sfz_recurrence.pdf)
 
 
 The Seattle Fault Zone has a billion earthquakes per year (Figure 
-\ref{fig_sfz_recurrence}.
+\ref{fig_sfz_recurrence}).
+
+
+- sfz recurrence stats:
+  - mode: 167 years
+  - median: 958 years
+  - mean: 1908 years
 
 ##  San Andreas recurrence
+
+
+![Earthquake timing and recurrence on the San Andreas fault. 
+\label{fig_saf_recurrence}](./figures/saf_recurrence.pdf)
+
+## Recurrence discussion
 
 # Survival analysis
 
@@ -218,11 +247,33 @@ assumptions thereof.
 
 ### operations on KDE functions
 
-## Puget hazard
+## WA hazard
+
+### Puget Lowlands hazard
+
+![Earthquake hazard $\lambda(t)$ for the Puget Lowlands and Seattle Fault Zone. 
+**a** $t$ vs. $\lambda(t)$ for the Puget Lowlands (blue) and Seattle Fault Zone 
+(orange) with time $t$ since a generic last event.  **b**: $t$ vs. $\lambda(t)$ 
+for the Puget Lowlands since the last event (on the Utsalady Fault, 384 years 
+B.P.). **c**: $t$ vs. $\lambda(t)$ for the Seattle Fault Zone since the last 
+event (Seattle Fault Zone earthquake E, 748 years B.P.). Solid vertical lines 
+in **b** and **c** indicate the last events, and dashed vertical lines indicate 
+the hazard at the time of this writing (2017). \label{fig_pug_hazard} 
+](./figures/pug_hazard.pdf)
+
 
 ### SFZ hazard
 
 ## SAF hazard
+
+![SAF hazards \label(fig_saf_hazard}](./figures/saf_hazard.pdf)
+
+
+## Expected time to failure
+
+### Puget
+
+### SAF
 
 - wrightwoood
 

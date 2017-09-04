@@ -128,6 +128,11 @@ print('Pallet Creek mode: ', pc_tot_rec_pdf.mode(), '\n',
       'Pallet Creek median: ', pc_tot_rec_pdf.median(), '\n',
       'Pallet Creek mean: ', pc_tot_rec_pdf.mean(), '\n',
       )
+
+
+ww_last_event = list(ww_mean_ages.values())[-1]
+pc_last_event = list(pc_mean_ages.values())[-1]
+
 # plots to plot
 
 # ages, recurrence intervals
@@ -223,16 +228,19 @@ ax20.set_ylabel('earthquake hazard λ(t)')
 ax20.set_title('a', loc='left', weight='bold')
 
 
-ax21.plot(ww_tot_rec_pdf.x + list(ww_mean_ages.values())[-1], 
+ax21.plot(ww_tot_rec_pdf.x + ww_last_event, 
           cp.recurrence.hazard(ww_tot_rec_pdf.x, ww_tot_rec_pdf),
           color='c')
 
-ax21.axvline(list(ww_mean_ages.values())[-1], 
+ax21.axvline(ww_last_event, 
              color='grey', lw=0.5, label='last earthquake')
 
 ax21.axvline(2017, linestyle='--', color='grey', lw=0.5)
 ax21.axhline(1 / ww_tot_rec_pdf.mean(), 
              color='c', linestyle='--', lw=0.5, label='mean (Poisson) hazard')
+
+ax21.scatter(2017, cp.recurrence.hazard(2017-ww_last_event, ww_tot_rec_pdf),
+             c='c')
 
 ax21.set_ylim([0., 0.04])
 
@@ -242,11 +250,15 @@ ax21.set_title('b', loc='left', weight='bold')
 
 ax21.legend(loc='best')
 
-ax22.plot(pc_tot_rec_pdf.x + list(pc_mean_ages.values())[-1], 
+ax22.plot(pc_tot_rec_pdf.x + pc_last_event, 
           cp.recurrence.hazard(pc_tot_rec_pdf.x, pc_tot_rec_pdf),
           color='m')
 
-ax22.axvline(list(pc_mean_ages.values())[-1], 
+ax22.scatter(2017, cp.recurrence.hazard(2017-pc_last_event, pc_tot_rec_pdf),
+             c='m')
+
+
+ax22.axvline(pc_last_event, 
              color='grey', lw=0.5, label='last earthquake')
 ax22.axvline(2017, linestyle='--', color='grey', lw=0.5)
 ax22.axhline(1 / pc_tot_rec_pdf.mean(), 
