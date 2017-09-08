@@ -85,6 +85,26 @@ However, geologic (mostly stratigraphic) relative age constraints are strong in
 the San Andreas data. For these analyses, we cull the sample sets that violate 
 relative age constraints.
 
+##  San Andreas recurrence
+
+
+![Earthquake timing and recurrence on the San Andreas fault. 
+\label{fig_saf_recurrence}](./figures/saf_recurrence.pdf)
+
+### Wrightwood
+
+Wrightwood mode:  (45.749148385884872, 0.0078220103914044825)
+ WrighPuget median:  98.53337529070336
+ WrighPuget mean:  104.332002507
+
+### Pallet Creek
+
+Pallet Creek mode:  (90.50480533481911, 0.0057850008225488313)
+ Pallet Creek median:  122.22446429602063
+ Pallet Creek mean:  134.510949648
+
+
+
 ## Puget Lowlands recurrence
 
 ![Earthquake timing and recurrence intervals in the Puget Lowlands. **a**: Time 
@@ -144,11 +164,6 @@ The Seattle Fault Zone has a billion earthquakes per year (Figure
   - median: 958 years
   - mean: 1908 years
 
-##  San Andreas recurrence
-
-
-![Earthquake timing and recurrence on the San Andreas fault. 
-\label{fig_saf_recurrence}](./figures/saf_recurrence.pdf)
 
 ## Recurrence discussion
 
@@ -175,15 +190,15 @@ versed in them. As a consequence, it is hard to find a straightforward
 explanation of the principles and general description of the key relationships 
 in the geoscience literature.
 
-Below, we give a simple overview of the aspects of survival analysis used in 
-this paper. This should be considered an extremely superficial introduction to 
-a mature science, but (as is often the case with applied mathematics) the 
-basics can be quite helpful in both clarifying our ideas and giving us powerful 
-quantitative tools. Additional techniques in survival analysis can be used if 
-an application calls for it; for example -@faenza_non-parametric_2003 apply a 
-proportional hazard model to a study of Italian seismicity to incorporate the 
-effects of earthquake magnitude and spatial occurrence into a time- and 
-space-dependent model.
+Below, we give a simple overview of the aspects of survival analysis used in
+this paper. This should be considered an superficial introduction to a mature
+statistical science, but (as is often the case with applied mathematics) the
+basics can be quite helpful in both clarifying our ideas and giving us powerful
+quantitative tools. Additional techniques in survival analysis can be used if
+an application calls for it; for example -@faenza_non-parametric_2003 apply a
+proportional hazard model in a study of Italian seismicity to incorporate the
+effects of earthquake magnitude and spatial occurrence into a time- and
+space-dependent predictive model.
 
 As we are operating on empirical PDFs that have no simple analytical form, the 
 mathematical descriptions will be general, which should aid in comprehension, 
@@ -208,27 +223,44 @@ $F(t)$ is the *cumulative distribution function* of $f(t)$, and is easily
 calculated from it if $f(t)$ is known:
 \begin{equation}
   \label{eqn_F_int}
-  F(t) = \int_{-\infty}^t f(t) dt \;.
+  F(t) = \int_{0}^t f(u) \, du \;.
 \end{equation}
-In the case of empirical (or non-analytical) $f(t)$, as in this study, $F(t)$ 
+(Note that we are integrating from 0 instead of $\infty$ as in the general
+integral for a cumulative distribution function because $f(t)$ is everywhere
+positive.) In the case of empirical (or non-analytical) $f(t)$, as in this study, $F(t)$ 
 can be calculated through numerical integration.
 
 Then, we can define the *survival function* (also known as the reliability 
 function) $S(t)$ as
 \begin{equation}
   \label{eqn_survival_fn}
-  S(t) = 1 - F(t) \; .
+  S(t) = \Pr[T > t] =  1 - F(t) = \int_t^{\infty} f(u) \, du \; .
 \end{equation}
 The survival function, as the compliment of $F(t)$, describes the probability 
 that $T$ is longer than $t$, or $\Pr[T>t]$, i.e. that a child will live beyond 
 a certain age. If $f(t)$ or $F(t)$ is not known but some some samples of $T$ 
 are known, $S(t)$ can still be estimated, for example through the Kaplan-Meier 
 Estimator [@kaplan_nonparametric_1958] (which can also handle *censored data*, 
-discussed below). Though the survival function is foundational, we will not use 
-it directly in this work. Instead, several additional functions are more 
-relevant for seismic hazard.
+discussed below). 
 
-A more immediately useful function, the *hazard function* (also called the 
+Though the survival function is foundational enough to serve as the namesake
+for this sort of analysis, it is not a final product in our work. Instead, it
+is a component of several other very useful functions that are of more
+immediate interest.
+
+These functions $f(t)$ and $S(t)$ provide alternate ways of estimating a useful
+parameter, the polynymous *mean survival time* (most familiarly, the *life
+expectancy* or *expected lifetime* in demographics and engineering, and the
+*mean recurrence interval* for our purposes), which we denote $E$. When this
+value is unconditional (i.e. at $t=0$), the mean recurrence interval is the mean of the recurrence interval PDF $f(t)$, but it can also be shown
+to be the integral of $S(t)$:
+
+\begin{equation}
+  \label{eqn_mean_lifetime_uncond}
+  E(T) = \int_0^{\infty} t \, f(t) \, dt = \int_0^{\infty} S(t) \, dt \;.
+\end{equation}
+
+Another useful function, the *hazard function* (also called the 
 *hazard rate function* or *failure function*) $\lambda (t)$ describes the 
 instantaneous probability of an event at time $t$ given that the event has not 
 yet occurred. $\lambda(t)$ can be derived from the previous functions as:
@@ -243,9 +275,78 @@ A plot of $t$ vs. $\lambda(t)$ may assume many forms, and these reflect the
 processes controlling the distribution of lifetimes or interevent times, or the 
 assumptions thereof. 
 
+### Conditional survival
+
+The equations above all relate to the probabilities and expectations of
+recurrence times (or lifetimes) starting from $t=0$, i.e. instantaneously
+after an earthquake. However, while these quantities are all useful for
+understanding the physics of earthquakes, for time-independent
+probabilistic seismic hazard analysis, and many other applications, we are
+often very interested in how these probabilities change through time in the
+absence of an earthquake. The colloquial 'overdue earthquake' is an intuitive
+(if imprecise) representation of this; -@davis_longer_1989's question is
+another, though more mathematical.
+
+First, we define the *conditional survival function* $S_c$, which is the
+survival function $S(t)$ conditional on $T > c$, i.e. that some time $c$ has
+elapsed and the event has not occurred.
+
+\begin{equation}
+  \label{eqn_cond_survival}
+  S_c(t) = \Pr[T_c > t] = \frac{S(c+t)}{S(c)}
+\end{equation}
+
+
+Then we can calculate the *conditional mean survival time remaining* (i.e., the
+*conditional life expectancy*, or the *mean lifetime remaining*) $E(T_c)$,
+which is the mean (or expected) amount of time that remains after time $t=c$
+has elapsed.
+
+
+\begin{align}
+%\begin{equation}
+%  \label{eqn_cond_expecc}
+  E(T_c) &= \int_0^{\infty} S_c(t) \, dt             \label{eqn_expect_scond}\\
+  &= \frac{\int_c^{\infty} S(t)\,dt }{S(c)}          \label{eqn_expect_s} \\
+  &= \frac{\int_c^{\infty} t \, f(t) \, dt}{S(c)} \;.\label{eqn_expect_f}
+%\end{equation}
+\end{align}
+
+The various methods for calculating $E(T_c)$ are similar and, for the most
+part, do not offer different advantages in cases of limited information or
+computational power. However, we show these three because Equations
+\ref{eqn_expect_scond} and \ref{eqn_expect_s} are the most common forms in the
+literature, while we find Equation \ref{eqn_expect_f} to be the most intuitive
+because it illustrates how the recurrence PDF $f(t)$ doesn't change its shape
+after some time $c$ has passed; instead, that part of the PDF $f(t<c)$ is
+removed and the remainder of the PDF $f(t \ge c)$ is normalized so that it is a
+proper PDF, i.e. that it integrates to 1, by dividing by its area (which is
+equal to $S(c)$, as shown in Equation \ref{eqn_survival_fn}).
+
+The conventional application of $E(T_c)$ is in demographic analyses of
+populations with a high infant mortality rate. The life expectancy at birth in
+these populations is lower than the life expectancy at age 5, because some
+significant fraction of the population dies by age 5, but those that do not may
+be expected to live well into adulthood.
+
+In the case of earthquakes, there are several applications of $E(T_c)$. Two are
+common topics of discussion,  the expectations for the interseismic time
+remaining given (1) 'overdue' earthquakes, i.e. when the waiting time $T$ has
+exceeded the mean recurrence time $E(T)$; and (2) triggered earthquakes, when
+some event causes an earthquake on a fault or fault system soon after the
+initial event (regardless of whether the first event is an earthquake or not).
+The tools of survival analysis, as laid out here, allow for easy quantification
+of these expectations.
+
 ### Censored data
 
+An important topic in survival analysis is *censored data*, which is the 
+
 ### operations on KDE functions
+
+## SAF hazard
+
+![SAF hazards \label(fig_saf_hazard}](./figures/saf_hazard.pdf)
 
 ## WA hazard
 
@@ -264,20 +365,16 @@ the hazard at the time of this writing (2017). \label{fig_pug_hazard}
 
 ### SFZ hazard
 
-## SAF hazard
-
-![SAF hazards \label(fig_saf_hazard}](./figures/saf_hazard.pdf)
-
 
 ## Expected time to failure
-
-### Puget
 
 ### SAF
 
 - wrightwoood
 
 - pallet creek
+
+### Puget
 
 # Discussion
 
