@@ -12,6 +12,12 @@ from culpable.offset_marker import OffsetMarker
 from culpable.recurrence import RecKDE
 
 
+# TODO: 
+# fit BPT, lognormal, ... and compare
+
+np.random.seed(420)
+
+
 wrightwood_data = pd.read_csv('../data/WW_ages.csv')
 pallet_creek_data = pd.read_csv('../data/PC_Scharer2011_ages.csv')
 
@@ -72,7 +78,7 @@ pc_mean_ages = OrderedDict(sorted(pc_mean_ages.items(), key=lambda x: x[1]))
 
 
 # recurrence interval stuff
-def get_rec_ints(eqs, n_quakes=int(5e3), order_check='sort', ravel=False):
+def get_rec_ints(eqs, n_quakes=int(1e4), order_check='sort', ravel=False):
     eq_times = np.array([eq.sample_ages(n_quakes) for eq in eqs.values()]).T
 
     if order_check == 'sort':
@@ -118,20 +124,36 @@ pc_rec_pdfs = [RecKDE(row) for row in pc_rec_ints]
 ww_tot_rec_pdf = get_rec_pdf(rec_ints=ww_rec_ints.ravel())
 pc_tot_rec_pdf = get_rec_pdf(rec_ints=pc_rec_ints.ravel())
 
+ww_last_event = list(ww_mean_ages.values())[-1]
+pc_last_event = list(pc_mean_ages.values())[-1]
+
+
+ww_covs = cp.recurrence.rec_coeff_variation(ww_rec_ints, aggregate=False)
+pc_covs = cp.recurrence.rec_coeff_variation(pc_rec_ints, aggregate=False)
+
+np.savetxt('../results/ww_covs.txt', ww_covs, delimiter=',')
+np.savetxt('../results/pc_covs.txt', pc_covs, delimiter=',')
+
+ww_mlr = cp.recurrence.mean_remaining_lifetime((2017 - ww_last_event),
+                                               ww_tot_rec_pdf)
+pc_mlr = cp.recurrence.mean_remaining_lifetime((2017 - pc_last_event),
+                                               pc_tot_rec_pdf)
+
+ww_bpt = cp.recurrence.BPT(ww_tot_rec_pdf.mean(), ww_covs.mean())
+pc_bpt = cp.recurrence.BPT(pc_tot_rec_pdf.mean(), pc_covs.mean())
+
 
 print('Wrightwood mode: ', ww_tot_rec_pdf.mode(), '\n',
-      'WrighPuget median: ', ww_tot_rec_pdf.median(), '\n',
-      'WrighPuget mean: ', ww_tot_rec_pdf.mean(), '\n',
+      'Wrightwood median: ', ww_tot_rec_pdf.median(), '\n',
+      'Wrightwood mean: ', ww_tot_rec_pdf.mean(), '\n',
+      'Wrightwood MLR: ', ww_mlr, '\n',
       )
 
 print('Pallet Creek mode: ', pc_tot_rec_pdf.mode(), '\n',
       'Pallet Creek median: ', pc_tot_rec_pdf.median(), '\n',
       'Pallet Creek mean: ', pc_tot_rec_pdf.mean(), '\n',
+      'Pallet Creek MLR: ', pc_mlr, '\n',
       )
-
-
-ww_last_event = list(ww_mean_ages.values())[-1]
-pc_last_event = list(pc_mean_ages.values())[-1]
 
 # plots to plot
 
@@ -141,18 +163,31 @@ f0, (ax00, ax01, ax03) = plt.subplots(3, 1, figsize=(7,6))
 f0.subplots_adjust(top=0.95, bottom=0.1, hspace=0.4)
 
 for k, eq in wrightwood_eqs.items():
-    ax00.plot(eq.age, eq.age_err,
-              lw=0.5, color='c')
+    if not np.isscalar(eq.age):
+        ax00.plot(eq.age, eq.age_err,
+                  lw=0.5, color='c')
+    else:
+        ax00.plot([eq.age, eq.age, eq.age], [0., 1., 0],
+                  lw=0.5, color='c')
 
 for k, eq in pallet_creek_eqs.items():
     ax00.plot(eq.age, eq.age_err,
               lw=0.5, color='m')
 
-#ax00.set_xlim([16000, 0])
-#ax00.set_ylim([0., 0.02])
+ax00.plot((0., 0.0001), (0., 0.), color='c', label='Wrightwood')
+ax00.plot((1000., 1000.0001), (0., 0.), color='m', label='Pallet Creek')
+
+ax00.set_ylim([0., 0.5])
+
+ax00.legend(loc='upper left')
 ax00.set_xlabel('calendar year')
 ax00.set_ylabel('eq time probability')
 ax00.set_title('a', loc='left', weight='bold')
+
+# wrightwood recurrence plot
+for rec_pdf in ww_rec_pdfs:
+    ax01.plot(rec_pdf.x, rec_pdf.y,
+              lw=0.5)
 
 ax02 = ax01.twinx()
 ax02.plot(ww_tot_rec_pdf.x, ww_tot_rec_pdf.y,
@@ -161,25 +196,15 @@ ax02.plot(ww_tot_rec_pdf.x, ww_tot_rec_pdf.y,
 ax02.plot(ww_tot_rec_pdf.cdf.x, 
           ww_tot_rec_pdf.cdf.y * ww_tot_rec_pdf.mode()[1],
           color='grey', linestyle='--', lw=1)
-
-# wrightwood recurrence plot
-for rec_pdf in ww_rec_pdfs:
-    ax01.plot(rec_pdf.x, rec_pdf.y,
-              lw=0.5)
-ax01.set_ylim([0., 0.025])
 
 ax01.set_title('b', loc='left', weight='bold')
 ax01.set_xlabel('recurrence interval')
 ax01.set_ylabel('probability')
 ax02.set_ylabel('probability')
 
-ax02 = ax01.twinx()
-ax02.plot(ww_tot_rec_pdf.x, ww_tot_rec_pdf.y,
-          color='grey', lw=1)
-
-ax02.plot(ww_tot_rec_pdf.cdf.x, 
-          ww_tot_rec_pdf.cdf.y * ww_tot_rec_pdf.mode()[1],
-          color='grey', linestyle='--', lw=1)
+ax01.set_xlim([0, 400])
+ax01.set_ylim([0., 0.025])
+ax02.set_ylim(bottom=0.)
 
 # pallet creek recurrence plot
 for rec_pdf in pc_rec_pdfs:
@@ -200,8 +225,26 @@ ax04.plot(pc_tot_rec_pdf.cdf.x,
           pc_tot_rec_pdf.cdf.y * pc_tot_rec_pdf.mode()[1],
           color='grey', linestyle='--', lw=1)
 
+ax03.set_xlim([0, 400])
+ax04.set_ylim(bottom=0.)
+
 f0.savefig('../manuscript/figures/saf_recurrence.pdf')
 
+
+
+f1, (ax10, ax11) = plt.subplots(2, 1, figsize=(7,3))
+
+ax10.plot(ww_tot_rec_pdf.x, ww_tot_rec_pdf.y,
+          color='c', label='Wrightwood empirical recurrence')
+
+ax10.plot(ww_tot_rec_pdf.x, ww_bpt(ww_tot_rec_pdf.x),
+          color='c', linestyle='-.', label='Wrightwood BPT')
+
+ax11.plot(pc_tot_rec_pdf.x, pc_tot_rec_pdf.y,
+          color='m', label='Pallet Creek empirical recurrence')
+
+ax11.plot(pc_tot_rec_pdf.x, pc_bpt(pc_tot_rec_pdf.x),
+          color='m', linestyle='-.', label='Pallet Creek BPT')
 
 # hazard
 # 3: generic hazard, ww from last date, pc from last date
@@ -211,18 +254,18 @@ f2.subplots_adjust(top=0.95, bottom=0.1, hspace=0.4)
 
 ax20.plot(ww_tot_rec_pdf.x, cp.recurrence.hazard(ww_tot_rec_pdf.x,
                                                   ww_tot_rec_pdf),
-          label='Wrightwood')
+          c='c', label='Wrightwood')
 
 ax20.plot(pc_tot_rec_pdf.x, cp.recurrence.hazard(pc_tot_rec_pdf.x,
                                                   pc_tot_rec_pdf),
-          label='Pallet Creek')
+          c='m', label='Pallet Creek')
 
-ax20.axhline(1 / ww_tot_rec_pdf.mean(), color='C0', linestyle='--', lw=0.5)
-ax20.axhline(1 / pc_tot_rec_pdf.mean(), color='C1', linestyle='--', lw=0.5)
+ax20.axhline(1 / ww_tot_rec_pdf.mean(), color='c', linestyle='--', lw=0.5)
+ax20.axhline(1 / pc_tot_rec_pdf.mean(), color='m', linestyle='--', lw=0.5)
 
 ax20.set_ylim([0., 0.04])
 
-ax20.legend(loc='best')
+ax20.legend(loc='upper left')
 ax20.set_xlabel('years since last event')
 ax20.set_ylabel('earthquake hazard λ(t)')
 ax20.set_title('a', loc='left', weight='bold')
@@ -243,12 +286,13 @@ ax21.scatter(2017, cp.recurrence.hazard(2017-ww_last_event, ww_tot_rec_pdf),
              c='c')
 
 ax21.set_ylim([0., 0.04])
+ax21.set_xlim([1850., 2400])
 
 ax21.set_xlabel('calendar year')
 ax21.set_ylabel('earthquake hazard λ(t)')
 ax21.set_title('b', loc='left', weight='bold')
 
-ax21.legend(loc='best')
+ax21.legend(loc='upper right')
 
 ax22.plot(pc_tot_rec_pdf.x + pc_last_event, 
           cp.recurrence.hazard(pc_tot_rec_pdf.x, pc_tot_rec_pdf),
@@ -264,12 +308,13 @@ ax22.axvline(2017, linestyle='--', color='grey', lw=0.5)
 ax22.axhline(1 / pc_tot_rec_pdf.mean(), 
              color='m', linestyle='--', lw=0.5, label='mean (Poisson) hazard')
 
-ax22.set_ylim([0., 0.04])
+ax22.set_ylim([0., 0.1])
+ax22.set_xlim([1850., 2400])
 
 ax22.set_xlabel('calendar year')
 ax22.set_ylabel('earthquake hazard λ(t)')
 ax22.set_title('c', loc='left', weight='bold')
-ax22.legend(loc='best')
+ax22.legend(loc='upper left')
 
 f2.savefig('../manuscript/figures/saf_hazard.pdf')
 

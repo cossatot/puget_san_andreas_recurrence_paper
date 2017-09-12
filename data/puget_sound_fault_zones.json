@@ -1,0 +1,55 @@
+{
+    "Bellingham": [
+        "Sandy_Point_EQ_C",
+        "sandypt_eqB",
+        "sandypt_eqA"
+    ],
+    "Birch Bay": [
+        "Birch_Bay_Uplift"
+    ],
+    "Boulder Creek": [
+        "kendall_eqA",
+        "kendall_EQC",
+        "kendall_EQB"
+    ],
+    "Darrington\u2013Devils Mountain": [
+        "DDMFZ_EQ1",
+        "DDMFZ_EQ2"
+    ],
+    "Frigid Creek": [
+        "frigid_EQ_1"
+    ],
+    "Lake Creek\u2013Boundary Creek": [
+        "LCBC_EQ3",
+        "LCBC_EQ2"
+    ],
+    "Olympia": [
+        "RSC5_Death"
+    ],
+    "Saddle Mountain": [
+        "smf_E3",
+        "smf_E2",
+        "smf_E1"
+    ],
+    "Seattle": [
+        "SFZ_EQ_B",
+        "SFZ_EQ_C",
+        "VasaParkEQ",
+        "SFZ_EQ_D",
+        "SFZ_EQE",
+        "West_Point_Sewer_Log_Death",
+        "SFZ_EQ_V",
+        "SFZ_EQ_A"
+    ],
+    "South Whidbey Island": [
+        "SWIF_EQ2",
+        "SWIF_EQ1"
+    ],
+    "Tacoma": [
+        "TFZ_EQ"
+    ],
+    "Utsalady Point": [
+        "Utsalady_EQ2",
+        "Utsalady_EQ1"
+    ]
+}

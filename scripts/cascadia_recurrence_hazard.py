@@ -9,6 +9,7 @@ import culpable as cp
 from culpable.offset_marker import OffsetMarker
 from culpable.recurrence import RecKDE
 
+
 time_data_file = '../data/puget_sound_eq_probs.json'
 fault_zones_file = '../data/puget_sound_fault_zones.json'
 
@@ -84,27 +85,38 @@ def get_rec_pdf(fz, n_quakes=int(1e4)):
 
 sfz_rec_ints = get_rec_ints(rec_fault_zones['Seattle'], ravel=False)
 sfz_rec_pdfs = [RecKDE(row) for row in sfz_rec_ints]
-
 sfz_tot_rec_pdf = get_rec_pdf(rec_fault_zones['Seattle'])
 
 
 
 pug_rec_ints = get_rec_ints(rec_fault_zones['puget_lowland'], ravel=False)
 pug_rec_pdfs = [RecKDE(row) for row in pug_rec_ints]
-
 pug_tot_rec_pdf = get_rec_pdf(rec_fault_zones['puget_lowland'])
+
+
+last_pug_event = 1950 - list(eq_mean_ages.values())[0]
+last_sfz_event = 1950 - list(sfz_mean_ages.values())[0]
+
+sfz_covs = cp.recurrence.rec_coeff_variation(sfz_rec_ints, aggregate=False)
+sfz_mlr = cp.recurrence.mean_remaining_lifetime((2017-last_sfz_event),
+                                                sfz_tot_rec_pdf)
+
+pug_covs = cp.recurrence.rec_coeff_variation(pug_rec_ints, aggregate=False)
+pug_mlr = cp.recurrence.mean_remaining_lifetime((2017-last_pug_event),
+                                                pug_tot_rec_pdf)
 
 
 print('Puget mode: ', pug_tot_rec_pdf.mode(), '\n',
       'Puget median: ', pug_tot_rec_pdf.median(), '\n',
       'Puget mean: ', pug_tot_rec_pdf.mean(), '\n',
+      'Puget MLR: ', pug_mlr, '\n',
       )
 
 print('Seattle mode: ', sfz_tot_rec_pdf.mode(), '\n',
       'Seattle median: ', sfz_tot_rec_pdf.median(), '\n',
       'Seattle mean: ', sfz_tot_rec_pdf.mean(), '\n',
+      'Seattle MLR: ', sfz_mlr, '\n'
       )
-
 
 ## Plotting
 
@@ -121,7 +133,7 @@ for k, eq in sfz_eqs.items():
 
 ax00.invert_xaxis()
 ax00.set_xlim([16000, 0])
-ax00.set_ylim([0., 0.02])
+ax00.set_ylim([0., 0.01])
 ax00.set_xlabel('calendar year')
 ax00.set_ylabel('eq time probability')
 ax00.set_title('a', loc='left', weight='bold')
@@ -159,7 +171,7 @@ for k, eq in eqs.items():
 
 ax10.invert_xaxis()
 ax10.set_xlim([16000, 0])
-ax10.set_ylim([0., 0.02])
+ax10.set_ylim([0., 0.01])
 ax10.set_xlabel('calendar year')
 ax10.set_ylabel('eq time probability')
 ax10.set_title('a', loc='left', weight='bold')
@@ -184,10 +196,6 @@ ax11.set_title('b', loc='left', weight='bold')
 
 
 f1.savefig('../manuscript/figures/pug_recurrence.pdf')
-
-
-last_pug_event = 1950 - list(eq_mean_ages.values())[0]
-last_sfz_event = 1950 - list(sfz_mean_ages.values())[0]
 
 
 f2, (ax20, ax21, ax22) = plt.subplots(3, 1, figsize=(7,6))
@@ -250,19 +258,33 @@ ax22.legend(loc='upper left')
 
 f2.savefig('../manuscript/figures/pug_hazard.pdf')
 
+### COVS ###
+ww_covs = np.loadtxt('../results/ww_covs.txt')
+pc_covs = np.loadtxt('../results/pc_covs.txt')
 
 
+f3, ax30 = plt.subplots(1,1, figsize=(7,4))
 
-#f3, (ax30, ax31, ax32) = plt.subplots(3, 1, figsize=(7,6))
-#f3.subplots_adjust(top=0.95, bottom=0.1, hspace=0.4)
+ax30.hist(pug_covs, bins=30, histtype='stepfilled', normed=True,
+          edgecolor='C0', facecolor='C0', alpha=0.5, lw=1,
+          label='Puget Lowlands')
 
-#ax30.plot(pug_tot_rec_pdf.x, cp.recurrence.S(pug_tot_rec_pdf.x,
-#                                             pug_tot_rec_pdf),
-#          label='Puget Lowland')
+ax30.hist(sfz_covs, bins=30, histtype='stepfilled', normed=True,
+          edgecolor='C1', facecolor='C1', alpha=0.5, lw=1,
+          label='Seattle Fault Zone')
 
-#ax30.plot(sfz_tot_rec_pdf.x, cp.recurrence.S(sfz_tot_rec_pdf.x,
-#                                             sfz_tot_rec_pdf),
-#          label='Seattle Fault Zone')
+ax30.hist(ww_covs, bins=30, histtype='stepfilled', normed=True,
+          edgecolor='c', facecolor='c', alpha=0.5, lw=1,
+          label='Wrightwood')
 
+ax30.hist(pc_covs, bins=30, histtype='stepfilled', normed=True,
+          edgecolor='m', facecolor='m', alpha=0.5, lw=1,
+          label='Pallet Creek')
 
+ax30.set_xlabel('Coefficient of Variation')
+ax30.set_ylabel('relative probability')
+
+ax30.legend(loc='best')
+
+f3.savefig('../manuscript/figures/covs.pdf')
 plt.show()

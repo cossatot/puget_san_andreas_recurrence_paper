@@ -22,18 +22,74 @@ abstract: "abstract"
 # Introduction
 
 The characterization of earthquake occurrence in time is of obvious importance 
-in seismic hazard analysis, and is also of substantial (though less immediately 
-practical) interest in the insight that it yields into the physics of the 
-earthquake process: Different types of earthquake recurrence behaviour imply 
-different types of loading, triggering and unloading (**reword**) of faults or 
-fault systems [e.g. @faenza_non-parametric_2003] (**say something about 
-interaction perhaps**). These 
+in seismic hazard analysis, and is also of substantial interest in the insight 
+that it yields into the physics of the earthquake process: Different types of 
+earthquake recurrence behaviour imply different types of loading, triggering 
+and unloading (**reword**) of faults or fault systems [e.g. 
+@faenza_non-parametric_2003] (**say something about interaction perhaps**). 
+These 
 
+The majority of studies seeking to characterize recurrence behavior or to make 
+probabilistic earthquake forecasts based on recurrence behavior use standard, 
+parametric probability distributions to represent recurrence. These may be 
+generic distributions with widespread cross-disciplinary use, such as the 
+normal, lognormal, Weibull and exponential distributions. Or they may be 
+distributions that are specific to earthquake science, perhaps with some 
+physical justification as well; the most prominent of the latter category is 
+the Brownian Passage time (BPT) model [@kagan;  @ellsworth; 
+@matthews_brownian_2002]. Studies that incorporate empirical recurrence 
+observations (from instrumental, historical or paleoseismological records) 
+typically fit the parameters of the recurrence distribution to the data using 
+maximum-likelihood or other optimization routines [e.g., **REFS**] and may draw 
+many samples from the earthquake timing or recurrence probability estimates to 
+propagate the uncertainty in the data to the parameter estimates [e.g., 
+**REFS**]. 
+
+However, it is entirely possible and in some instances more appropriate to 
+characterize recurrence non-parametrically. There are several reasons for doing 
+so. A primary motivation is that the recurrence distributions listed above are 
+typically applied to individual faults that may operate independently and may 
+incorporate some manner of renewal (i.e. stress reloading), rather than 
+populations of faults that may interact. Though the recurrence behavior of a 
+given fault may be well characterized by, say, a BPT model, the statistical 
+properties of a population of BPT faults is unlikely to be as well 
+characterized by a BPT distribution. The major exception is the exponential 
+distribution (the Poisson model) which depends only on the mean rate of events, 
+and therefore can accommodate any number of faults but cannot account for fault 
+reloading or interaction. Additionally, a researcher may simply wish to operate 
+without specifying a particular model; non-parametric analysis of time-to-event 
+data is extremely common across a wide range of social and natural sciences.
+
+In this work, we demonstrate methods to characterize and analyze the interevent 
+(i.e. recurrence) times of faults and fault zones based on their paleoseismic 
+histories. The recurrence distributions are constructed by Monte Carlo sampling 
+of the empirical paleoearthquake age distributions, with and without 
+constraints from stratigraphic ordering. Then, we illustrate the use of the 
+statistical techniques of *survival analysis* to calculate the time-dependent 
+earthquake rates, the expected times to the next event, and related quantities, 
+and we show how those quantities may be updated given the elapsed time since 
+the last event.
+
+We do not claim that for individual points or segments of a fault, the 
+empirical recurrence distributions as derived here are more accurate 
+characterizations of fault behavior than the aforementioned parametric models. 
+In our methods, we embed the assumption that the recurrence behavior of these 
+faults based on a small number of events ($n \le 30$) is sufficient to fully 
+characterize their behavior. A particular weakness is that they lack the 
+capability to describe recurrence intervals that are longer than those 
+observed. The situation is different for fault systems, as the exponential 
+model is the only one that is capable of dealing with multiple faults; 
+therefore, our methods are self-evidently superior in that they are applicable.
+
+Regardless, the methods presented here are general, flexible and powerful, and 
+may be applied to a range of problems in geoscience.
 
 ## Recurrence models
 
 ![Map of fault traces in the Puget lowlands hosting the earthquakes analyzed 
 here. \label{fig_eq_map}](./figures/rupture_map.pdf)
+
+**need a SSAF map**
 
 
 # Earthquake geology of the Puget Lowlands and San Andreas
@@ -55,7 +111,7 @@ manner:
    on availability of relative time constraints and will be discussed below).
 
 3. Calculate the interevent times (i.e. the time interval between successive 
-   events) for all of the earthquakes in each of the $N$ sequences
+   events) for all of the earthquakes in each of the $N$ sequences.
 
 4. Concatenate the interevent times, sort them, and create a recurrence 
    (interevent) PDF through a kernel density estimation of the interevent 
@@ -94,15 +150,18 @@ relative age constraints.
 ### Wrightwood
 
 Wrightwood mode:  (45.749148385884872, 0.0078220103914044825)
- WrighPuget median:  98.53337529070336
- WrighPuget mean:  104.332002507
+Wrighwood median:  98.53337529070336
+Wrighwood mean:  104.332002507
 
 ### Pallet Creek
 
 Pallet Creek mode:  (90.50480533481911, 0.0057850008225488313)
- Pallet Creek median:  122.22446429602063
- Pallet Creek mean:  134.510949648
+Pallet Creek median:  122.22446429602063
+Pallet Creek mean:  134.510949648
 
+![Histograms of oefficients of variation for fault systems considered here. 
+Histograms are normalized, but each are based on 10,000 data points. 
+\label{fig_cov_hists}](./figures/covs.pdf)
 
 
 ## Puget Lowlands recurrence
@@ -170,13 +229,13 @@ The Seattle Fault Zone has a billion earthquakes per year (Figure
 # Survival analysis
 
 Survival analysis is a branch of statistics that deals with the time to events, 
-commonly deaths (hence its name) or product failures. It is very commonly used 
-in the life sciences (especially medicine and public health) as well as in 
-engineering (where it is often called 'reliability analysis'), and has seen 
-application in a wide variety of fields. Unfortunately, this has lead to some 
-variability in terminology that can make searching for certain ideas 
-challenging; we will provide a list of common terms for the same concept where 
-appropriate.
+commonly deaths (hence its name) or manufactured product failures. It is very 
+commonly used in the social and life sciences (especially medicine and public 
+health) as well as in engineering (where it is often called 'reliability 
+analysis'), and has seen application in a wide variety of fields. 
+Unfortunately, this has lead to some variability in terminology that can make 
+searching for certain ideas challenging; we will provide a list of common terms 
+for the same concept where appropriate.
 
 The techniques of survival analysis are well-suited for studying a range of 
 geoscientific phenomena, but there seems to be little explicit mention of it in 
@@ -201,8 +260,7 @@ effects of earthquake magnitude and spatial occurrence into a time- and
 space-dependent predictive model.
 
 As we are operating on empirical PDFs that have no simple analytical form, the 
-mathematical descriptions will be general, which should aid in comprehension, 
-perhaps at the expense of mathematical elegance.
+mathematical descriptions will be general, which should aid in comprehension.
 
 ## Survival analysis mathematics
 
@@ -219,16 +277,16 @@ that the time between earthquakes is less than $t$ years:
   \label{eqn_F_def}
   F(t) = \begin{cases} \Pr[T \le t] & t \ge 0 \\ 0 & t < 0 \end{cases}
 \end{equation}
-$F(t)$ is the *cumulative distribution function* of $f(t)$, and is easily 
+$F(t)$ is the *cumulative distribution function* of $f(t)$, and is
 calculated from it if $f(t)$ is known:
 \begin{equation}
   \label{eqn_F_int}
   F(t) = \int_{0}^t f(u) \, du \;.
 \end{equation}
-(Note that we are integrating from 0 instead of $\infty$ as in the general
+(Note that we are integrating from 0 instead of $-\infty$ as in the general
 integral for a cumulative distribution function because $f(t)$ is everywhere
-positive.) In the case of empirical (or non-analytical) $f(t)$, as in this study, $F(t)$ 
-can be calculated through numerical integration.
+positive.) In the case of empirical (or non-analytical) $f(t)$, as in this 
+study, $F(t)$ can be calculated through numerical integration.
 
 Then, we can define the *survival function* (also known as the reliability 
 function) $S(t)$ as
@@ -239,9 +297,9 @@ function) $S(t)$ as
 The survival function, as the compliment of $F(t)$, describes the probability 
 that $T$ is longer than $t$, or $\Pr[T>t]$, i.e. that a child will live beyond 
 a certain age. If $f(t)$ or $F(t)$ is not known but some some samples of $T$ 
-are known, $S(t)$ can still be estimated, for example through the Kaplan-Meier 
-Estimator [@kaplan_nonparametric_1958] (which can also handle *censored data*, 
-discussed below). 
+are known, $S(t)$ can be estimated directly, for example through the 
+Kaplan-Meier Estimator [@kaplan_nonparametric_1958] (which can also handle 
+*censored data*, discussed below). 
 
 Though the survival function is foundational enough to serve as the namesake
 for this sort of analysis, it is not a final product in our work. Instead, it
@@ -251,7 +309,7 @@ immediate interest.
 These functions $f(t)$ and $S(t)$ provide alternate ways of estimating a useful
 parameter, the polynymous *mean survival time* (most familiarly, the *life
 expectancy* or *expected lifetime* in demographics and engineering, and the
-*mean recurrence interval* for our purposes), which we denote $E$. When this
+*mean recurrence interval* for our purposes), which we denote $E(T)$. When this
 value is unconditional (i.e. at $t=0$), the mean recurrence interval is the mean of the recurrence interval PDF $f(t)$, but it can also be shown
 to be the integral of $S(t)$:
 
@@ -285,7 +343,7 @@ probabilistic seismic hazard analysis, and many other applications, we are
 often very interested in how these probabilities change through time in the
 absence of an earthquake. The colloquial 'overdue earthquake' is an intuitive
 (if imprecise) representation of this; -@davis_longer_1989's question is
-another, though more mathematical.
+another.
 
 First, we define the *conditional survival function* $S_c$, which is the
 survival function $S(t)$ conditional on $T > c$, i.e. that some time $c$ has
@@ -296,12 +354,10 @@ elapsed and the event has not occurred.
   S_c(t) = \Pr[T_c > t] = \frac{S(c+t)}{S(c)}
 \end{equation}
 
-
 Then we can calculate the *conditional mean survival time remaining* (i.e., the
 *conditional life expectancy*, or the *mean lifetime remaining*) $E(T_c)$,
 which is the mean (or expected) amount of time that remains after time $t=c$
 has elapsed.
-
 
 \begin{align}
 %\begin{equation}
@@ -319,7 +375,7 @@ computational power. However, we show these three because Equations
 literature, while we find Equation \ref{eqn_expect_f} to be the most intuitive
 because it illustrates how the recurrence PDF $f(t)$ doesn't change its shape
 after some time $c$ has passed; instead, that part of the PDF $f(t<c)$ is
-removed and the remainder of the PDF $f(t \ge c)$ is normalized so that it is a
+excised and the remainder of the PDF $f(t \ge c)$ is normalized so that it is a
 proper PDF, i.e. that it integrates to 1, by dividing by its area (which is
 equal to $S(c)$, as shown in Equation \ref{eqn_survival_fn}).
 
@@ -370,11 +426,14 @@ the hazard at the time of this writing (2017). \label{fig_pug_hazard}
 
 ### SAF
 
-- wrightwoood
+- wrightwoood = 34.96 years
 
-- pallet creek
+- pallet creek = 65.30 years
 
 ### Puget
+
+- pugetL 366
+- sfz 1765
 
 # Discussion
 
